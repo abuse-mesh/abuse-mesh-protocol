@@ -1,0 +1,14 @@
+Plugin/bundle options
+ - Connection authentication plugins
+	- Add extra authentication options that are not included in the core
+ - Report importer 		# gathers info from a external source and makes new reports out of that info
+ - Report exporter 		# get the raw reports and exports them to a other system
+ 	- Adding special api calls
+	- Adding schedules
+	- Listners for report table update events
+ - Delist request validator
+	- Add extra suspect validation options that are not included in the core
+ - Node exporter
+	- Adding special api calls
+	- adding schedules
+	- Listners for node talbe update events
