@@ -1,0 +1,103 @@
+
+//This file describes the API portion of the AbuseMesh protocol
+syntax = "proto3";
+
+package abusemesh.protocol;
+
+import "abuse-mesh-common.proto";
+
+/**
+ * Start of request messages
+**/
+
+message GetNodeRequest{}
+
+message GetNodeTableRequest {}
+
+message GetNeighborTableRequest {
+    //If true the server should return the global neighbor table
+    //If false the server should return only its own neighbor table
+    bool global = 1;
+}
+
+message GetReportTableRequest {}
+
+message GetDelistRequestTableRequest {}
+
+message GetDelistAcceptanceTableRequest {}
+
+message TableUpdateStreamRequest {}
+
+/**
+ * Start of response messages
+**/
+
+message GetNodeTableResponse {
+    repeated abusemesh.common.Node nodes = 1;
+}
+
+message GetNeighborTableResponse {
+    repeated abusemesh.common.Neighbor neighbors = 1;
+}
+
+message GetReportTableResponse {
+    repeated abusemesh.common.Report reports = 1;
+}
+
+message GetDelistRequestTableResponse {
+    repeated abusemesh.common.DelistRequest delist_requests = 1;
+}
+
+message GetDelistAcceptanceTableResponse {
+    repeated abusemesh.common.DelistAcceptance delist_acceptance = 1;
+}
+  
+message TableUpdate {
+    TableUpdateType update_type = 1;
+    oneof table_entity {
+        abusemesh.common.Node node = 2;
+        abusemesh.common.Neighbor neighbor = 3;
+        abusemesh.common.Report report = 4;
+        abusemesh.common.DelistRequest delist_requests = 5;
+        abusemesh.common.DelistAcceptance delist_acceptance = 6; 
+    }
+}
+
+//The type of update to a table
+enum TableUpdateType {
+    //A new entity is added to the table
+    TABLE_UPDATE_NEW = 0;
+
+    //A existing entity was changed in the table
+    TABLE_UPDATE_EDIT = 1;
+
+    //A entity was deleted from the table
+    TABLE_UPDATE_DELETE = 2;
+}
+
+/**
+ * Start of service definition
+**/
+
+service AbuseMesh {
+    //Returns the Node data of the current node
+    rpc GetNode (GetNodeRequest) returns (abusemesh.common.Node);
+
+    //Returns the contents of the node table
+    rpc GetNodeTable (GetNodeTableRequest) returns (GetNodeTableResponse);
+
+    //Returns the contents of the neighbor table of the node
+    rpc GetNeighborTable (GetNeighborTableRequest) returns (GetNeighborTableResponse);
+
+    //Returns the contents of the report table of the node
+    rpc GetReportTable (GetReportTableRequest) returns (GetReportTableResponse);
+
+    //Returns the contents of the report delist requests table of the node
+    rpc GetDelistRequestTable (GetDelistRequestTableRequest) returns (GetDelistRequestTableResponse);
+
+    //Returns the contents of the report delist acceptance table of the node
+    rpc GetDelistAcceptanceTable (GetDelistAcceptanceTableRequest) returns (GetDelistAcceptanceTableResponse);
+
+    //Opens a stream on which all updates to the tables of a node are published
+    rpc TableUpdateStream (TableUpdateStreamRequest) returns (stream TableUpdate);
+}

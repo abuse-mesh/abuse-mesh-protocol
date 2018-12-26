@@ -1,0 +1,329 @@
+syntax = "proto3";
+
+package abusemesh.common;
+
+enum IPAddressFamily {
+    IPFAMILY_IPV4 = 0;
+    IPFAMILY_IPV6 = 1;
+}
+
+message IPAddress {
+    IPAddressFamily address_family = 1;
+    string address = 2;
+}
+
+message IPRange {
+    IPAddress address = 1;
+    int32 prefix = 2;
+}
+
+//UUID (Universally unique identifier)
+message UUID {
+    string uuid = 1;
+}
+
+//A Neighbor is a node the current node has a connection with
+message Neighbor {
+    //The node to which the current node is connected
+    Node node = 1;
+}
+
+//A node is a application which speaks the AbuseMesh protocol
+message Node {
+    //The ID of the node
+    UUID uuid = 1;
+    //The IP address on which the node is reachable
+    IPAddress ip_address = 2;
+    //Details about how to contact the the company and/of administrators of a node
+    ContactDetails contact_details = 3;
+    //The number of the autonomous system for which this node claims to have authority
+    int32 ASN = 4;
+    //The PGP entity which the node uses to sign its messages 
+    PGPEntity pgp_entity = 5;
+    //The semantic version of the AbuseMesh protocol in use by the node
+    string protocol_version = 6;
+}
+
+message ContactDetails {
+    string company_name = 1;
+    string email_address = 2;
+    string phone_number = 3;
+    string physical_address = 4;
+    repeated Person contact_persons = 5;
+
+    message Person {
+        string first_name = 6;
+        string middle_name = 7;
+        string last_name = 8;
+        string job_title = 9;
+        string email_address = 10;
+        string phone_number = 11;
+    }
+}
+
+message PGPEntity {
+    //Public key of the entity in ASCII-Armor format
+    string public_key = 1;
+
+    //All identities that claim to be this key
+    repeated PGPIdentity identities = 2; 
+
+    //All subkeys of this master key
+    repeated PGPSubkey subkeys = 3;
+}
+
+message PGPIdentity {
+    //The user identifier, e.g. Serverius B.V. (833af263-57b8-49f5-b679-12164db5a439) <abuse@serverius.net>
+    string user_id = 1;
+
+    //A user identity verification signature signed by the key this identity belongs to
+    PGPSignature self_signature = 2;
+
+    //A list of identity verification signatures signed by other nodes to confirm this is the identity of the key/node
+    repeated PGPSignature signatures = 3; 
+}
+
+message PGPSignature {
+    //Signature in ASCII-Armor format
+    string signature = 1;
+}
+
+message PGPSubkey {
+    //public key of the subkey in ASCII-Armor format
+    string public_key = 1;
+
+    //A signature signed with the master key to prove this key is a subkey of the master key
+    PGPSignature signature = 2;
+}
+
+message Report {
+    //The id of the report
+    UUID uuid = 1;
+
+    //The id of the node which created the report
+    UUID reporter = 2;
+    
+    //The id of the node which claims ownership over the AS where the abuse originated
+    UUID suspect = 3;
+
+    //The signature that proves the reporter it the author of the report and that the report has no been modified
+    PGPSignature signature = 4; 
+
+    //The type of abuse this report specifies
+    oneof report_abuse_type {
+        //A string containing the name of the abuse type
+        //Creating a report with a unstandardized type is supported for edge cases
+        //A standardized type should be used wherever possible so nodes can handle reports in a standardized way
+        string unstandardized_abuse_type = 5;
+
+        //A standardized enum of abuse types which should include all abuse type there are.
+        AbuseType abuse_type = 6;
+    }
+
+    //A human readable description to give context
+    //WARNING: this field should not be used for evidence, metadata or other machine data.
+    string description = 7;
+
+    oneof abuse_origin {
+        //Origin is a email address
+        string email = 8;
+
+        //Origin is a domain name
+        string domain_name = 9;
+
+        //Origin is a specific url
+        string url = 10;
+
+        //Origin is a single ip address
+        IPAddress ip = 11;
+
+        //Origin is a range of ip addresses
+        IPRange ip_range = 12;
+    }
+
+    //A key value map of evidence of abuse
+    //e.g. when reporting spam, the recieved email can be included
+    //e.g. for illegal scanning a log can be included
+    //e.g. when reporting a DoS attack a anonymised PCAP can be included
+    map<string, Evidence> evidence = 13;
+
+    //A map containing extra details about the abuse type
+    //e.g. when reporting a DoS attack the type of DOS attack can be a metadata field
+    //TODO maybe this should be standardized as well at some point
+    map<string, string> abuse_type_metadata = 14;
+
+    //How was the abuse detected
+    //e.g. spam filter
+    //e.g. DDoS detector
+    //e.g. human entry
+    AbuseDetectionMethod detection_method = 15;
+
+    //A map containing extra details about the detection method
+    //e.g. which software version was used to detect the abuse
+    //e.g. who created this report manually
+    //TODO maybe this should be standardized as well at some point
+    map<string, string> detection_method_metadata = 16;
+}
+
+//A report conformation can be created by a node which claims to have checked the report indepenantly and confirms the abuse report
+//A report conformation therefor must also provide evidence
+message ReportConformation {
+    //The id of the report conformation
+    UUID uuid = 1;
+
+    //The id of node that created the confirmation
+    UUID node = 2;
+
+    //The id of the report that is confirmed by this message
+    UUID report = 3;
+
+    //The signature that proves the reporter it the author of the report and that the report has not been modified
+    PGPSignature signature = 4; 
+
+    //A human readable description of the conformation
+    //WARNING: this field should not be used for evidence or other machine data.
+    string description = 5;
+
+    //A key value map of evidence of abuse which should be indepently gathered
+    //e.g. when reporting copyright infringement a http request and response can be added
+    //e.g. when reporting a DoS attack a anonymised PCAP can be included
+    map<string, Evidence> evidence = 6;
+
+    //How was the abuse detected
+    //e.g. spam filter
+    //e.g. DDoS detector
+    //e.g. human entry
+    AbuseDetectionMethod detection_method = 7;
+
+    //A map containing extra details about the detection method
+    //e.g. which software version was used to detect the abuse
+    //e.g. who created this report manually
+    //TODO maybe this should be standardized as well at some point
+    map<string, string> detection_method_metadata = 8;
+}
+
+message AbuseDetectionMethod {
+    oneof detection_method {
+        string unstandardized_detection_method = 1;
+        AbuseDetectionMethodType detection_method_type = 2;
+    }
+}
+
+enum AbuseDetectionMethodType {
+    //TODO add standardized detection method types
+    ABUSE_DETECTION_MANUAL = 0;
+
+}
+
+message Evidence {
+    oneof evidence_type {
+        string unstandardized_evidence_type = 1;
+        EvidenceType type = 2;
+    }
+    bytes evidence_data = 3;
+}
+
+enum EvidenceType {
+    //TODO add all evidence types
+    EVIDENCE_URL = 0;
+    EVIDENCE_LOG = 1;
+    EVIDENCE_IMAGE = 2;
+    EVIDENCE_PCAP = 3;
+}
+
+//NOTE: This list is not complete and probably never will be
+//This list must be moderated with the following guidelines:
+// 1. General categories, details and variations can be managed with metadata. This keeps the list stable
+// 2. Only generally considered abuse, this list should contain acts which are almost unanimously labeled abuse.
+//    Very disputable acts like port scanning(at the time of writing this) should be be part of the standard until 
+//    a great majority of the the community labels it as abuse. 
+//    However just because one or a few geo political entities allow a act doesn't mean it is not belong on this list 
+enum AbuseType {
+    //A abuse report of spam
+    ABUSE_SPAM = 0;
+    //A abuse report of phishing
+    ABUSE_PHISHING = 1;
+    //A abuse report of a denial of service attack vector
+    ABUSE_DOS = 2;
+    //A abuse report of copyright infringement of any form
+    ABUSE_COPYRIGHT_INFRINGEMENT = 3;
+    //A abuse report of content which is against the law in most places
+    //e.g. Child Pornography, Hate speech
+    //NOTE: This category is not meant for unwanted political content, fake news and other undesirable content which is not illegal
+    ABUSE_ILLEGAL_CONTENT = 4;
+    //A abuse report of origin of a hacking attempts which were not requested, promoted or sanctioned by the victim
+    ABUSE_UNSANCTIONED_HACKING = 5;
+    //A abuse report of a location on the internet from where computer viruses are distributed
+    ABUSE_VIRUS_DISTRIBUTION = 6;
+}
+
+message DelistRequest {
+    //The id of the delist request
+    UUID uuid = 1;
+
+    //The report to be delisted
+    UUID report = 2;
+
+    //The node which requested the delisting
+    Node node = 3;
+
+    //The signature that proves the requester it the author of the delist request and that the delist request has not been modified
+    PGPSignature signature = 4;
+
+    //A human readable description which may explain why a report is incorrect or has been resolved
+    string description = 5;
+
+    //A key value map of evidence which proves a report is incorrect or resolved
+    //e.g. a letter of consent when appealing a scanning abuse report
+    //e.g. a link to a court case
+    map<string, Evidence> evidence = 6;
+
+    //A map containing extra details
+    //e.g. when reporting a DOS attack the type of DOS attack can be a metadata field
+    //TODO maybe this should be standardized as well at some point
+    map<string, string> metadata = 7;
+}
+
+message DelistAcceptance {
+    //The id of the delist acceptance
+    UUID uuid = 1;
+
+    //The id of the delist request
+    UUID delist_request = 2;
+
+    //The node which accepted the delisting request
+    Node node = 3;
+
+    //The signature that proves the node it the author of the delist acceptance and that the delist acceptance has not been modified
+    PGPSignature signature = 4;
+
+    //A human readable description which may explain why the delist request was accepted
+    string description = 5;
+
+    //A key value map of evidence which proves a report is incorrect or resolved
+    //e.g. http request and response to a url which now returns a 404 in case of copyright infringement
+    map<string, Evidence> evidence = 6;
+
+    //The method which was used to accept this method
+    //e.g. manual(human check)
+    //e.g. automated copyright check tool
+    DelistAcceptanceMethod acceptance_method = 7;
+
+    //A map containing extra details about the acceptance method
+    //e.g. what is the name, version and source code of a scanner 
+    //e.g. Which human checked the delist request
+    //TODO maybe this should be standardized as well at some point
+    map<string, string> acceptance_method_metadata = 8;
+}
+
+message DelistAcceptanceMethod {
+    oneof acceptance_method {
+        string unstandardized_acceptance_method_type = 1;
+        DelistAcceptanceMethodType method_type = 2;
+    }
+}
+
+enum DelistAcceptanceMethodType {
+    //TODO add standardized acceptance methods
+    DELIST_ACCEPTANCE_MANUAL = 0;
+}
