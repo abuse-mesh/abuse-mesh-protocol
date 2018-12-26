@@ -2,7 +2,7 @@
 //This file describes the API portion of the AbuseMesh protocol
 syntax = "proto3";
 
-package abusemesh.protocol;
+package abusemesh;
 
 import "abuse-mesh-common.proto";
 
@@ -33,33 +33,33 @@ message TableUpdateStreamRequest {}
 **/
 
 message GetNodeTableResponse {
-    repeated abusemesh.common.Node nodes = 1;
+    repeated Node nodes = 1;
 }
 
 message GetNeighborTableResponse {
-    repeated abusemesh.common.Neighbor neighbors = 1;
+    repeated Neighbor neighbors = 1;
 }
 
 message GetReportTableResponse {
-    repeated abusemesh.common.Report reports = 1;
+    repeated Report reports = 1;
 }
 
 message GetDelistRequestTableResponse {
-    repeated abusemesh.common.DelistRequest delist_requests = 1;
+    repeated DelistRequest delist_requests = 1;
 }
 
 message GetDelistAcceptanceTableResponse {
-    repeated abusemesh.common.DelistAcceptance delist_acceptance = 1;
+    repeated DelistAcceptance delist_acceptance = 1;
 }
   
 message TableUpdate {
     TableUpdateType update_type = 1;
     oneof table_entity {
-        abusemesh.common.Node node = 2;
-        abusemesh.common.Neighbor neighbor = 3;
-        abusemesh.common.Report report = 4;
-        abusemesh.common.DelistRequest delist_requests = 5;
-        abusemesh.common.DelistAcceptance delist_acceptance = 6; 
+        Node node = 2;
+        Neighbor neighbor = 3;
+        Report report = 4;
+        DelistRequest delist_requests = 5;
+        DelistAcceptance delist_acceptance = 6; 
     }
 }
 
@@ -81,7 +81,7 @@ enum TableUpdateType {
 
 service AbuseMesh {
     //Returns the Node data of the current node
-    rpc GetNode (GetNodeRequest) returns (abusemesh.common.Node);
+    rpc GetNode (GetNodeRequest) returns (Node);
 
     //Returns the contents of the node table
     rpc GetNodeTable (GetNodeTableRequest) returns (GetNodeTableResponse);

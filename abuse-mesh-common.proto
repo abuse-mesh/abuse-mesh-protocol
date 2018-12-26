@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package abusemesh.common;
+package abusemesh;
 
 enum IPAddressFamily {
     IPFAMILY_IPV4 = 0;
