@@ -1,0 +1,10 @@
+language: minimal
+
+services:
+  - docker
+
+before_install:
+  - mkdir build
+  
+script:
+  - docker run --rm -v $(pwd):$(pwd) -w $(pwd) znly/protoc -I . abuse-mesh-common.proto abuse-mesh.proto --go_out=plugins=grpc:build
