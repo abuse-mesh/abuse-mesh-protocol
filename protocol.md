@@ -7,9 +7,9 @@ Abuse Mesh was created as an alternative to the current abuse reporting and blac
 
 The situation as of the creation of this document is quite bad. Almost all abuse reports are being sent of email, which needs to be processed by a human. At large scale this becomes a tough job. Attempts have been made to somewhat improve the process by parsing the emails, and processing the reports automatically. However this often times doesn't work since most emails don't adhere to a standard.
 
-A similar yet different situation is the blacklisting systems which are around at the moment. Often times the big online blacklists are managed by secretive organizations which create these blacklists based on there own findings or opinions. Often they don't state any proof of what they clame to have found.
+A similar yet different situation is the blacklisting systems which are around at the moment. Often times the big online blacklists are managed by secretive organizations which create these blacklists based on there own findings or opinions. Often they don't state any proof of what they claim to have found.
 
-These blacklist are published in .txt, .csv or .xls files which don't follow any standard. The result is that every blacklist has a diffrent format which needs special attention to parse and use.
+These blacklist are published in .txt, .csv or .xls files which don't follow any standard. The result is that every blacklist has a different format which needs special attention to parse and use.
 
 Once a IP owner(often ISP's or other service providers) has dealt with the issue a delist request has to be emailed to the organization which manages the blacklist. Sometimes it can take days or weeks before a listing is removed, if it gets removed at all.
 
