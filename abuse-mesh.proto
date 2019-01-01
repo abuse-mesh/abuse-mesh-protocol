@@ -12,6 +12,10 @@ import "abuse-mesh-common.proto";
 
 message GetNodeRequest{}
 
+message OfferSignatureRequest {
+    PGPSignature signature = 1;
+}
+
 message GetNodeTableRequest {}
 
 message GetNeighborTableRequest {
@@ -22,11 +26,15 @@ message GetNeighborTableRequest {
 
 message GetReportTableRequest {}
 
+message GetReportConfirmationTableRequest {}
+
 message GetDelistRequestTableRequest {}
 
 message GetDelistAcceptanceTableRequest {}
 
-message TableUpdateStreamRequest {}
+message TableEventStreamRequest {}
+
+message GetHistoricTableEventsRequest {}
 
 /**
  * Start of response messages
@@ -36,12 +44,18 @@ message GetNodeTableResponse {
     repeated Node nodes = 1;
 }
 
+message OfferSignatureResponse {}
+
 message GetNeighborTableResponse {
     repeated Neighbor neighbors = 1;
 }
 
 message GetReportTableResponse {
     repeated Report reports = 1;
+}
+
+message GetReportConfirmationTableResponse {
+    repeated ReportConfirmation report_confirmations = 1;
 }
 
 message GetDelistRequestTableResponse {
@@ -51,20 +65,34 @@ message GetDelistRequestTableResponse {
 message GetDelistAcceptanceTableResponse {
     repeated DelistAcceptance delist_acceptance = 1;
 }
+
+message GetHistoricTableEventsResponse {
+    repeated TableEvent events = 1;
+}
   
-message TableUpdate {
-    TableUpdateType update_type = 1;
+message TableEvent {
+    //The unique id of this event
+    UUID event_id = 1;
+    
+    //The id of the event before this one regarding the same entity
+    //Is only set when `update_type` is EDIT or DELETE
+    UUID previous_event = 2;
+
+    //The signature of `uuid` and `previous_event` signed with the same key as the entity
+    PGPSignature event_signature = 3;
+    TableEventType update_type = 4;
     oneof table_entity {
-        Node node = 2;
-        Neighbor neighbor = 3;
-        Report report = 4;
-        DelistRequest delist_requests = 5;
-        DelistAcceptance delist_acceptance = 6; 
+        Node node = 5;
+        Neighbor neighbor = 6;
+        Report report = 7;
+        ReportConfirmation report_confirmation = 8;
+        DelistRequest delist_requests = 9;
+        DelistAcceptance delist_acceptance = 10; 
     }
 }
 
 //The type of update to a table
-enum TableUpdateType {
+enum TableEventType {
     //A new entity is added to the table
     TABLE_UPDATE_NEW = 0;
 
@@ -83,6 +111,10 @@ service AbuseMesh {
     //Returns the Node data of the current node
     rpc GetNode (GetNodeRequest) returns (Node);
 
+    //With this call a client offers a signature of the identity to the server
+    //This allows the server to increase its credibility
+    rpc OfferSignature (OfferSignatureRequest) returns (OfferSignatureResponse);
+
     //Returns the contents of the node table
     rpc GetNodeTable (GetNodeTableRequest) returns (GetNodeTableResponse);
 
@@ -92,12 +124,18 @@ service AbuseMesh {
     //Returns the contents of the report table of the node
     rpc GetReportTable (GetReportTableRequest) returns (GetReportTableResponse);
 
+    //Returns the contents of the report confirmation table of the node
+    rpc GetReportConfirmationTable (GetReportConfirmationTableRequest) returns (GetReportConfirmationTableResponse);
+
     //Returns the contents of the report delist requests table of the node
     rpc GetDelistRequestTable (GetDelistRequestTableRequest) returns (GetDelistRequestTableResponse);
 
     //Returns the contents of the report delist acceptance table of the node
     rpc GetDelistAcceptanceTable (GetDelistAcceptanceTableRequest) returns (GetDelistAcceptanceTableResponse);
 
-    //Opens a stream on which all updates to the tables of a node are published
-    rpc TableUpdateStream (TableUpdateStreamRequest) returns (stream TableUpdate);
+    //Returns all historic table events leading up to this point
+    rpc GetHistoricTableEvents (GetHistoricTableEventsRequest) returns (GetHistoricTableEventsResponse);
+
+    //Opens a stream on which all table events of a node are published
+    rpc TableEventStream (TableEventStreamRequest) returns (stream TableEvent);
 }

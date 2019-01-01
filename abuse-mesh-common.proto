@@ -22,30 +22,36 @@ message UUID {
     string uuid = 1;
 }
 
-//A Neighbor is a node the current node has a connection with
+//A Neighbor is a node to which another node is directly connected.
 message Neighbor {
-    //The node to which the current node is connected
-    Node node = 1;
+    //The id of the neighbor message
+    UUID id = 1;
+    //The id of the client node
+    UUID client_node = 2;
+    //The id of the server node
+    UUID server_node = 3;
+    //A signature of the client node which confirms the validity and integrity
+    PGPSignature client_signature = 4;
 }
 
 //A node is a application which speaks the AbuseMesh protocol
 message Node {
     //The ID of the node
     UUID uuid = 1;
-    //The IP address on which the node is reachable
-    IPAddress ip_address = 2;
-    //Details about how to contact the the company and/of administrators of a node
-    ContactDetails contact_details = 3;
-    //The number of the autonomous system for which this node claims to have authority
-    int32 ASN = 4;
-    //The PGP entity which the node uses to sign its messages 
-    PGPEntity pgp_entity = 5;
     //The semantic version of the AbuseMesh protocol in use by the node
-    string protocol_version = 6;
+    string protocol_version = 2;
+    //The IP address on which the node is reachable
+    IPAddress ip_address = 3;
+    //Details about how to contact the the company and/of administrators of a node
+    ContactDetails contact_details = 4;
+    //The number of the autonomous system for which this node claims to have authority
+    int32 ASN = 5;
+    //The PGP entity which the node uses to sign its messages 
+    PGPEntity pgp_entity = 6;
 }
 
 message ContactDetails {
-    string company_name = 1;
+    string organization_name = 1;
     string email_address = 2;
     string phone_number = 3;
     string physical_address = 4;
@@ -62,38 +68,13 @@ message ContactDetails {
 }
 
 message PGPEntity {
-    //Public key of the entity in ASCII-Armor format
-    string public_key = 1;
-
-    //All identities that claim to be this key
-    repeated PGPIdentity identities = 2; 
-
-    //All subkeys of this master key
-    repeated PGPSubkey subkeys = 3;
-}
-
-message PGPIdentity {
-    //The user identifier, e.g. Serverius B.V. (833af263-57b8-49f5-b679-12164db5a439) <abuse@serverius.net>
-    string user_id = 1;
-
-    //A user identity verification signature signed by the key this identity belongs to
-    PGPSignature self_signature = 2;
-
-    //A list of identity verification signatures signed by other nodes to confirm this is the identity of the key/node
-    repeated PGPSignature signatures = 3; 
+    //The PGP packets of this pgp entity: the public key, userids, signatures and subkeys in binary format
+    bytes pgp_packets = 1;
 }
 
 message PGPSignature {
-    //Signature in ASCII-Armor format
-    string signature = 1;
-}
-
-message PGPSubkey {
-    //public key of the subkey in ASCII-Armor format
-    string public_key = 1;
-
-    //A signature signed with the master key to prove this key is a subkey of the master key
-    PGPSignature signature = 2;
+    //A PGP detached signature packet of data 
+    bytes signature = 1;
 }
 
 message Report {
@@ -165,10 +146,10 @@ message Report {
     map<string, string> detection_method_metadata = 16;
 }
 
-//A report conformation can be created by a node which claims to have checked the report indepenantly and confirms the abuse report
-//A report conformation therefor must also provide evidence
-message ReportConformation {
-    //The id of the report conformation
+//A report confirmation can be created by a node which claims to have checked the report indepenantly and confirms the abuse report
+//A report confirmation therefor must also provide evidence
+message ReportConfirmation {
+    //The id of the report confirmation
     UUID uuid = 1;
 
     //The id of node that created the confirmation
@@ -180,7 +161,7 @@ message ReportConformation {
     //The signature that proves the reporter it the author of the report and that the report has not been modified
     PGPSignature signature = 4; 
 
-    //A human readable description of the conformation
+    //A human readable description of the confirmation
     //WARNING: this field should not be used for evidence or other machine data.
     string description = 5;
 

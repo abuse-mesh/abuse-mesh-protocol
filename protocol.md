@@ -1,5 +1,7 @@
 # Abuse Mesh
 
+WARNING/NOTE this document is out of date and subject to change in the future until the first stable release
+
 ## Motivation
 Abuse Mesh was created as an alternative to the current abuse reporting and blacklisting systems.
 
