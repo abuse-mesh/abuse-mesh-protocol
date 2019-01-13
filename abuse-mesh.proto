@@ -16,58 +16,29 @@ message OfferSignatureRequest {
     PGPSignature signature = 1;
 }
 
-message GetNodeTableRequest {}
+message NegotiateNeighborshipRequest {}
 
-message GetNeighborTableRequest {
-    //If true the server should return the global neighbor table
-    //If false the server should return only its own neighbor table
-    bool global = 1;
+message TableEventStreamRequest {
+    //The id of the session for which a client want to get the event stream
+    UUID session_id = 1;
+
+    //The event offset in the session the client requests
+    uint64 offset = 2;
 }
-
-message GetReportTableRequest {}
-
-message GetReportConfirmationTableRequest {}
-
-message GetDelistRequestTableRequest {}
-
-message GetDelistAcceptanceTableRequest {}
-
-message TableEventStreamRequest {}
-
-message GetHistoricTableEventsRequest {}
 
 /**
  * Start of response messages
 **/
 
-message GetNodeTableResponse {
-    repeated Node nodes = 1;
-}
-
 message OfferSignatureResponse {}
 
-message GetNeighborTableResponse {
-    repeated Neighbor neighbors = 1;
-}
+message NegotiateNeighborshipResponse {
+    //The identifier for this session
+    UUID session_id = 1;
+    
+    //The amount of events a server has sent to the client
+    uint64 event_counter = 2;
 
-message GetReportTableResponse {
-    repeated Report reports = 1;
-}
-
-message GetReportConfirmationTableResponse {
-    repeated ReportConfirmation report_confirmations = 1;
-}
-
-message GetDelistRequestTableResponse {
-    repeated DelistRequest delist_requests = 1;
-}
-
-message GetDelistAcceptanceTableResponse {
-    repeated DelistAcceptance delist_acceptance = 1;
-}
-
-message GetHistoricTableEventsResponse {
-    repeated TableEvent events = 1;
 }
   
 message TableEvent {
@@ -89,6 +60,9 @@ message TableEvent {
         DelistRequest delist_requests = 9;
         DelistAcceptance delist_acceptance = 10; 
     }
+
+    //The event number of this event for the session between the server and client
+    uint64 event_number = 11;
 }
 
 //The type of update to a table
@@ -115,26 +89,8 @@ service AbuseMesh {
     //This allows the server to increase its credibility
     rpc OfferSignature (OfferSignatureRequest) returns (OfferSignatureResponse);
 
-    //Returns the contents of the node table
-    rpc GetNodeTable (GetNodeTableRequest) returns (GetNodeTableResponse);
-
-    //Returns the contents of the neighbor table of the node
-    rpc GetNeighborTable (GetNeighborTableRequest) returns (GetNeighborTableResponse);
-
-    //Returns the contents of the report table of the node
-    rpc GetReportTable (GetReportTableRequest) returns (GetReportTableResponse);
-
-    //Returns the contents of the report confirmation table of the node
-    rpc GetReportConfirmationTable (GetReportConfirmationTableRequest) returns (GetReportConfirmationTableResponse);
-
-    //Returns the contents of the report delist requests table of the node
-    rpc GetDelistRequestTable (GetDelistRequestTableRequest) returns (GetDelistRequestTableResponse);
-
-    //Returns the contents of the report delist acceptance table of the node
-    rpc GetDelistAcceptanceTable (GetDelistAcceptanceTableRequest) returns (GetDelistAcceptanceTableResponse);
-
-    //Returns all historic table events leading up to this point
-    rpc GetHistoricTableEvents (GetHistoricTableEventsRequest) returns (GetHistoricTableEventsResponse);
+    //This call can be used by a client to request to a neighbor of this node
+    rpc NegotiateNeighborship (NegotiateNeighborshipRequest) returns (NegotiateNeighborshipResponse);
 
     //Opens a stream on which all table events of a node are published
     rpc TableEventStream (TableEventStreamRequest) returns (stream TableEvent);
