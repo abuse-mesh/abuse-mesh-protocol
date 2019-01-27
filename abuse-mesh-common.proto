@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package abusemesh;
 
+option go_package = "github.com/abuse-mesh/abuse-mesh-go-stubs/abusemesh";
+
 enum IPAddressFamily {
     IPFAMILY_IPV4 = 0;
     IPFAMILY_IPV6 = 1;

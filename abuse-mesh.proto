@@ -4,6 +4,10 @@ syntax = "proto3";
 
 package abusemesh;
 
+//This option makes it so that when you import this proto file in another proto file the go import path
+// will point to the generated stub which are located in another repository
+option go_package = "github.com/abuse-mesh/abuse-mesh-go-stubs/abusemesh";
+
 import "abuse-mesh-common.proto";
 
 /**
